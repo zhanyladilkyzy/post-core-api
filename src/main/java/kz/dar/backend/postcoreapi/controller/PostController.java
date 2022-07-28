@@ -3,6 +3,7 @@ package kz.dar.backend.postcoreapi.controller;
 import kz.dar.backend.postcoreapi.model.Post;
 import kz.dar.backend.postcoreapi.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,9 +18,12 @@ public class PostController {
     @Autowired
     private PostService postService;
 
+    @Autowired
+    Environment environment;
+
     @GetMapping("/check")
     public String check(){
-        return "Controller works!";
+        return "Controller works! " + environment.getProperty("local.server.port");
     }
 
     @PostMapping
