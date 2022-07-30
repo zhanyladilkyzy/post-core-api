@@ -23,7 +23,7 @@ public class PostController {
 
     @GetMapping("/check")
     public String check(){
-        return "Controller works! " + environment.getProperty("local.server.port");
+        return "Post controller works! " + environment.getProperty("local.server.port");
     }
 
     @PostMapping
