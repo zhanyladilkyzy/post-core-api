@@ -1,6 +1,7 @@
 package kz.dar.backend.postcoreapi.controller;
 
-import kz.dar.backend.postcoreapi.model.Post;
+import kz.dar.backend.postcoreapi.model.PostRequest;
+import kz.dar.backend.postcoreapi.model.PostResponse;
 import kz.dar.backend.postcoreapi.service.PostService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
@@ -8,7 +9,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -26,32 +26,32 @@ public class PostController {
         return "Post controller works! " + environment.getProperty("local.server.port");
     }
 
-    @PostMapping
-    public ResponseEntity<String> sentPost(@Valid @RequestBody Post post) {
-        postService.createPost(post);
-        return new ResponseEntity<String>("Successfully sent", HttpStatus.OK);
+
+    @PostMapping("/create")
+    private PostResponse createPost(@RequestBody PostRequest postRequest) {
+        return postService.createPost(postRequest);
     }
 
     @GetMapping("/all")
-    public List<Post> getAllPosts() {
+    private List<PostResponse> getAllPosts() {
         return postService.getAllPosts();
     }
 
     @GetMapping("/{postId}")
-    public Post getPostById(@PathVariable String postId) {
+    private PostResponse getPostById(@PathVariable String postId) {
         return postService.getPostById(postId);
     }
 
     @PutMapping("/{postId}")
-    public ResponseEntity<String> updatePostById(@PathVariable String postId, @Valid @RequestBody Post post) {
-         postService.updatePostById(postId, post);
-         return new ResponseEntity<String>("Successfully updated!", HttpStatus.OK);
+    private PostResponse updatePost(@PathVariable String postId, @RequestBody PostRequest postRequest) {
+        postRequest.setPostId(postId);
+        return postService.updatePostById(postId, postRequest);
     }
 
     @DeleteMapping("/{postId}")
-    public ResponseEntity<String> deletePostById(@PathVariable String postId) {
+    private ResponseEntity<String> deletePost(@PathVariable String postId) {
         postService.deletePostById(postId);
-        return new ResponseEntity<String>("Successfully deleted!", HttpStatus.OK);
+        return new ResponseEntity<String>("Post deleted!", HttpStatus.OK);
     }
 
 }

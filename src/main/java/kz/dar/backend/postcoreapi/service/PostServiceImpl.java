@@ -1,53 +1,63 @@
 package kz.dar.backend.postcoreapi.service;
 
-import kz.dar.backend.postcoreapi.model.Post;
-import kz.dar.backend.postcoreapi.model.PostStatus;
+import kz.dar.backend.postcoreapi.model.PostRequest;
+import kz.dar.backend.postcoreapi.model.PostResponse;
+import kz.dar.backend.postcoreapi.repository.PostEntity;
+import kz.dar.backend.postcoreapi.repository.PostRepository;
+import org.modelmapper.ModelMapper;
+import org.modelmapper.convention.MatchingStrategies;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
-public class PostServiceImpl implements  PostService {
+public class PostServiceImpl implements PostService{
 
-    private static final HashMap<String, Post> postMap = new HashMap<>();
+    @Autowired
+    PostRepository postRepository;
+
+    static ModelMapper modelMapper = new ModelMapper();
 
     static {
-        Post post1 = new Post(UUID.randomUUID().toString(), UUID.randomUUID().toString(), UUID.randomUUID().toString(), PostStatus.CREATED);
-        Post post2 = new Post(UUID.randomUUID().toString(), UUID.randomUUID().toString(), UUID.randomUUID().toString(), PostStatus.FORMED);
-        Post post3 = new Post(UUID.randomUUID().toString(), UUID.randomUUID().toString(), UUID.randomUUID().toString(), PostStatus.SENT);
-
-        postMap.put(post1.getPostId(), post1);
-        postMap.put(post2.getPostId(), post2);
-        postMap.put(post3.getPostId(), post3);
+        modelMapper.getConfiguration().setMatchingStrategy(MatchingStrategies.STRICT);
     }
 
     @Override
-    public void createPost(Post post) {
-        post.setPostId(UUID.randomUUID().toString());
-        postMap.put(post.getPostId(), post);
+    public PostResponse createPost(PostRequest postRequest) {
+        postRequest.setPostId(UUID.randomUUID().toString());
+        PostEntity postEntity = modelMapper.map(postRequest, PostEntity.class);
+        postRepository.save(postEntity);
+        return modelMapper.map(postEntity, PostResponse.class);
     }
 
     @Override
-    public List<Post> getAllPosts() {
-        return new ArrayList<>(postMap.values());
+    public List<PostResponse> getAllPosts() {
+        List<PostEntity> postEntities = new ArrayList<>();
+        postRepository.findAll().forEach(postEntities::add);
+        return postEntities.stream().map(post -> modelMapper.map(post, PostResponse.class)).collect(Collectors.toList());
     }
 
     @Override
-    public Post getPostById(String postId) {
-        return postMap.get(postId);
+    public PostResponse getPostById(String postId) {
+        return modelMapper.map(postRepository.getPostEntityByPostId(postId), PostResponse.class);
     }
 
     @Override
-    public void updatePostById(String postId, Post post) {
-        post.setPostId(UUID.randomUUID().toString());
-        postMap.put(post.getPostId(), post);
+    public PostResponse updatePostById(String postId, PostRequest postRequest) {
+        postRequest.setPostId(UUID.randomUUID().toString());
+        PostEntity postEntity = modelMapper.map(postRequest, PostEntity.class);
+        PostEntity dbEntity = postRepository.getPostEntityByPostId(postId);
+        postEntity.setId(dbEntity.getId());
+        postRepository.save(postEntity);
+        return modelMapper.map(postEntity, PostResponse.class);
     }
 
     @Override
     public void deletePostById(String postId) {
-        postMap.remove(postId);
+        postRepository.deletePostEntityByPostId(postId);
     }
 }

@@ -6,7 +6,7 @@ import javax.validation.constraints.NotNull;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class Post {
+public class PostModel {
 
     private String postId;
 
